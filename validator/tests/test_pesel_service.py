@@ -5,7 +5,7 @@ from validator.services.pesel import validate_pesel
 
 def test_valid_1900s_female():
     # 1990-05-12, female, checksum matches
-    pesel = '90051212318'
+    pesel = '90051200009'
     res = validate_pesel(pesel)
     assert res.is_valid
     assert res.birth_date == date(1990, 5, 12)
@@ -14,7 +14,7 @@ def test_valid_1900s_female():
 
 def test_valid_2000s_male():
     # 2003-12-31 -> month 12 + 20 = 32; using plausible checksum (example PESEL)
-    pesel = '03323112394'
+    pesel = '03323100013'
     res = validate_pesel(pesel)
     assert res.is_valid
     assert res.birth_date == date(2003, 12, 31)

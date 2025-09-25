@@ -12,20 +12,36 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 
+from dotenv import load_dotenv
+from .env_utils import env_bool, env_int, env_list, env_str
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env at project root
+load_dotenv(BASE_DIR / ".env")
+
+
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-@b!+&nru!=h*c7g&(@78h=85shk6=izahu@)q^5b1_^%6(_de9'
+# In development, a default is provided; set DJANGO_SECRET_KEY in production.
+DEBUG = env_bool("DJANGO_DEBUG", default=True)
+SECRET_KEY = env_str(
+    "DJANGO_SECRET_KEY",
+    default="django-insecure-change-me",
+    required=not DEBUG,
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+# Hosts and CSRF
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=["*"] if DEBUG else [],
+)
+CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 
 # Application definition
@@ -73,12 +89,28 @@ WSGI_APPLICATION = 'pesel_project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+DB_ENGINE = env_str("DB_ENGINE", default="django.db.backends.sqlite3")
+
+if DB_ENGINE.endswith("sqlite3"):
+    db_name = env_str("DB_NAME", default=str(BASE_DIR / "db.sqlite3"))
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': db_name,
+        }
     }
-}
+else:
+    # Generic configuration for non-sqlite engines; customize via env
+    DATABASES = {
+        'default': {
+            'ENGINE': DB_ENGINE,
+            'NAME': env_str("DB_NAME", default=""),
+            'USER': env_str("DB_USER", default=""),
+            'PASSWORD': env_str("DB_PASSWORD", default=""),
+            'HOST': env_str("DB_HOST", default="localhost"),
+            'PORT': env_str("DB_PORT", default=""),
+        }
+    }
 
 
 # Password validation
@@ -103,19 +135,20 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = env_str('LANGUAGE_CODE', default='en-us')
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = env_str('TIME_ZONE', default='UTC')
 
-USE_I18N = True
+USE_I18N = env_bool('USE_I18N', default=True)
 
-USE_TZ = True
+USE_TZ = env_bool('USE_TZ', default=True)
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = env_str('STATIC_URL', default='static/')
+STATIC_ROOT = env_str('STATIC_ROOT', default=str(BASE_DIR / 'staticfiles'))
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
