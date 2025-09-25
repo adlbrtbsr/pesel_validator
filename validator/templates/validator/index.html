@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PESEL Validator</title>
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    .alert { padding: 1rem; border-radius: 6px; margin-top: 1rem; }
+    .alert-success { background: #e6ffed; border: 1px solid #acf2bd; }
+    .alert-error { background: #ffe6e6; border: 1px solid #f5b5b5; }
+    form { display: grid; gap: .5rem; max-width: 420px; }
+    label { font-weight: 600; }
+    input[type=text] { padding: .5rem; font-size: 1rem; }
+    button { padding: .5rem .75rem; font-size: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>PESEL Validator</h1>
+  <form method="post">
+    {% csrf_token %}
+    <label for="id_pesel">PESEL</label>
+    {{ form.pesel }}
+    {% if form.errors %}
+      <div class="alert alert-error">
+        {{ form.errors }}
+      </div>
+    {% endif %}
+    <button type="submit">Validate</button>
+  </form>
+
+  {% if result %}
+    {% if result.is_valid %}
+      <div class="alert alert-success">
+        <strong>Valid PESEL</strong><br>
+        Date of birth: {{ result.birth_date }}<br>
+        Sex: {{ result.sex }}
+      </div>
+    {% else %}
+      <div class="alert alert-error">
+        <strong>Invalid PESEL</strong>
+        <ul>
+          {% for e in result.errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  {% endif %}
+</body>
+</html>
